@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const path = require('path');
 const os = require('os');
 const eg = require('../../eg');
-
 module.exports = class extends eg.Generator {
   constructor (args, opts) {
     super(args, opts);
@@ -129,7 +128,7 @@ module.exports = class extends eg.Generator {
 
   install () {
     const { version: installedVersion } = require('../../../package.json');
-    this.npmInstall([`express-gateway@${installedVersion}`], { save: true });
+    this.addDependencies({ '@sansitech/express-gateway': installedVersion });
   }
 
   end () {
