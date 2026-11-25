@@ -20,17 +20,16 @@ module.exports.bootstrapFolder = function () {
     }));
 };
 
-module.exports.runCLICommand = function ({ adminPort, adminUrl, configDirectoryPath, cliArgs, cliExecOptions }) {
+module.exports.runCLICommand = function ({ adminPort, adminUrl, configDirectoryPath, cliArgs, cliExecOptions = {} }) {
   // TODO: it should not depend on configFolder, API only, now the last dependency is models
-  cliExecOptions = Object.assign({
-    env: process.env
-  }, cliExecOptions || {});
-
-  cliExecOptions.env.EG_CONFIG_DIR = configDirectoryPath;
-  cliExecOptions.env.EG_ADMIN_URL = adminUrl || `http://localhost:${adminPort}`;
-  const command = ['node', modulePath].concat(cliArgs).join(' ');
+  const env = {
+    ...(cliExecOptions.env || process.env),
+    EG_CONFIG_DIR: configDirectoryPath,
+    EG_ADMIN_URL: adminUrl || `http://localhost:${adminPort}`
+  };
+  const command = [`"${process.execPath}"`, `"${modulePath}"`].concat(cliArgs).join(' ');
   return new Promise((resolve, reject) => {
-    exec(command, cliExecOptions, (err, stdout) => {
+    exec(command, { ...cliExecOptions, env }, (err, stdout) => {
       if (err) {
         reject(err);
         return;

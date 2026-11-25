@@ -21,9 +21,15 @@ describe('REST: Users', () => {
       adminHelper.admin.users.list().then((data) => should(data).have.property('nextKey').Number().not.eql(0))
     );
 
-    it('should respect the start parameter', () =>
-      adminHelper.admin.users.list({ start: 20 }).then((data) => should(data.users[0].username).not.eql('1'))
-    );
+    it('should respect the start parameter', async () => {
+      const count = 40;
+      const firstPage = await adminHelper.admin.users.list({ count });
+      should(firstPage.nextKey).be.above(0);
+
+      const nextPage = await adminHelper.admin.users.list({ count, start: firstPage.nextKey });
+      should(nextPage.users).not.be.empty();
+      should(nextPage.nextKey).not.eql(firstPage.nextKey);
+    });
 
     it('should respect a count parameter', () =>
       adminHelper.admin.users.list({ count: 40 }).then((data) => should(data.users.length).lessThanOrEqual(40))

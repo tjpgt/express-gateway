@@ -17,6 +17,7 @@ describe('admin with plugins', () => {
       config: {
         gatewayConfig: {
           admin: {
+            host: '127.0.0.1',
             port: 0
           }
         }
