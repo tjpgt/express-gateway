@@ -2,6 +2,7 @@ const should = require('should');
 const idGen = require('../../lib/uuid62');
 const adminHelper = require('../common/admin-helper')();
 const username = idGen.v4();
+let createdApplicationIds = [];
 
 describe('REST: Applications', () => {
   before(() =>
@@ -19,6 +20,9 @@ describe('REST: Applications', () => {
   describe('Insert two applications with the same name under the same user', () => {
     before(() =>
       adminHelper.admin.apps.create(username, { name: 'appy1', redirectUri: 'http://localhost:3000/cb' })
+        .then(app => {
+          createdApplicationIds.push(app.id);
+        })
     );
 
     it('should return an error on the second attemp', () =>
@@ -48,7 +52,10 @@ describe('REST: Applications', () => {
   });
 
   describe('Pagination features', () => {
-    before(() => Promise.all(Array(100).fill().map((e, index) => adminHelper.admin.apps.create(username, { name: index }))));
+    before(() => Promise.all(Array(100).fill().map((e, index) => adminHelper.admin.apps.create(username, { name: index })))
+      .then(apps => {
+        createdApplicationIds = createdApplicationIds.concat(apps.map(app => app.id));
+      }));
 
     it('should return a numeric value for nextKey', () =>
       adminHelper.admin.apps.list().then((data) => should(data).have.property('nextKey').Number().not.eql(0))
@@ -63,9 +70,19 @@ describe('REST: Applications', () => {
       should(nextPage.apps).not.be.empty();
       should(nextPage.nextKey).not.eql(firstPage.nextKey);
 
-      const firstPageIds = new Set(firstPage.apps.map(app => app.id));
-      const overlappingApps = nextPage.apps.filter(app => firstPageIds.has(app.id));
-      should(overlappingApps).be.empty();
+      const pages = [firstPage, nextPage];
+      let nextKey = nextPage.nextKey;
+      while (nextKey !== 0) {
+        const page = await adminHelper.admin.apps.list({ count, start: nextKey });
+        pages.push(page);
+        nextKey = page.nextKey;
+      }
+
+      const returnedIds = pages.flatMap(page => page.apps.map(app => app.id));
+      const returnedIdSet = new Set(returnedIds);
+      should(returnedIds).have.length(createdApplicationIds.length);
+      should(returnedIdSet.size).equal(createdApplicationIds.length);
+      createdApplicationIds.forEach(id => should(returnedIdSet.has(id)).be.true());
     });
 
     it('should respect a count parameter', () =>
