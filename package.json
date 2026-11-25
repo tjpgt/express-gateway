@@ -3,7 +3,10 @@
   "version": "1.16.12",
   "description": "A microservices API gateway built on top of ExpressJS",
   "homepage": "https://www.express-gateway.io",
-  "repository": "expressgateway/express-gateway",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/expressgateway/express-gateway.git"
+  },
   "keywords": [
     "microservices",
     "apis",
@@ -18,19 +21,38 @@
     "oauth2"
   ],
   "contributors": [
-    "Roman Lisagor <rlisagor@gmail.com>",
-    "Serhii Kuts <sergeykuc@gmail.com>",
-    "Irfan Baqui <irfan.baqui@gmail.com>",
-    "Kevin Swiber <kswiber@gmail.com>",
-    "Al Tsang <agilecto@gmail.com>",
-    "Vincenzo Chianese <vincenz.chianese@icloud.com>"
+    {
+      "name": "Roman Lisagor",
+      "email": "rlisagor@gmail.com"
+    },
+    {
+      "name": "Serhii Kuts",
+      "email": "sergeykuc@gmail.com"
+    },
+    {
+      "name": "Irfan Baqui",
+      "email": "irfan.baqui@gmail.com"
+    },
+    {
+      "name": "Kevin Swiber",
+      "email": "kswiber@gmail.com"
+    },
+    {
+      "name": "Al Tsang",
+      "email": "agilecto@gmail.com"
+    },
+    {
+      "name": "Vincenzo Chianese",
+      "email": "vincenz.chianese@icloud.com"
+    }
   ],
   "license": "Apache-2.0",
   "main": "lib/index.js",
   "engines": {
-    "node": ">= 8.3.0"
+    "node": "^22.18.0 || >=24.11.0"
   },
   "scripts": {
+    "vendor:redis-mock": "node vendor/repack-ioredis-mock.js",
     "start": "node lib/index.js",
     "start:dev": "cross-env LOG_LEVEL=debug node lib/index.js",
     "lint": "eslint --fix .",
@@ -39,7 +61,7 @@
     "test:all": "cross-env EG_HTTP_PORT=0 EG_CONFIG_DIR=lib/config EG_DISABLE_CONFIG_WATCH=true mocha test",
     "test:unit": "cross-env EG_HTTP_PORT=0 EG_CONFIG_DIR=lib/config EG_DISABLE_CONFIG_WATCH=true mocha \"./test/{,!(e2e)/**/}*.test.js\"",
     "test:e2e": "mocha test/e2e",
-    "mocha:istanbul": "nyc --reporter=lcov npm run test:all && nyc report --report=lcov > coverage.lcov && codecov"
+    "mocha:istanbul": "nyc --reporter=lcov npm run test:all && nyc report --report=lcov > coverage.lcov"
   },
   "lint-staged": {
     "*.js": [
@@ -48,7 +70,7 @@
     ]
   },
   "bin": {
-    "eg": "./bin/index.js"
+    "eg": "bin/index.js"
   },
   "nyc": {
     "exclude": [
@@ -63,6 +85,7 @@
   "dependencies": {
     "ajv": "^6.10.2",
     "ajv-keywords": "^3.4.1",
+    "base-x": "^5.0.1",
     "bcryptjs": "^2.4.3",
     "chalk": "^2.4.2",
     "chokidar": "^3.5.3",
@@ -70,48 +93,48 @@
     "color-convert": "^1.9.3",
     "connect-ensure-login": "0.1.1",
     "cors": "^2.8.5",
+    "cross-spawn": "^7.0.6",
     "ejs": "^3.1.7",
     "express": "^4.17.1",
     "express-rate-limit": "^6.1.0",
-    "express-session": "^1.16.2",
+    "express-session": "^1.19.0",
     "find-up": "^3.0.0",
     "form-urlencoded": "^4.0.0",
     "http-proxy": "^1.18.0",
-    "ioredis": "^4.28.5",
-    "ioredis-mock": "^5.8.4",
+    "ioredis": "^6.0.0",
+    "ioredis-mock": "file:vendor/ioredis-mock-8.13.1-eg.1.tgz",
     "js-yaml": "^3.13.1",
     "json-schema-merge-allof": "^0.6.0",
     "json-schema-ref-parser": "^7.1.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.3",
     "lodash.flatmap": "^4.5.0",
     "minimatch": "^3.0.4",
+    "npm-package-arg": "^13.0.0",
     "oauth2orize": "^1.11.0",
     "parent-require": "^1.0.0",
-    "passport": "^0.4.0",
+    "passport": "^0.7.0",
     "passport-http": "0.3.0",
     "passport-http-bearer": "1.0.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "1.0.0",
     "passport-oauth2-client-password": "0.1.2",
-    "proxy-agent": "^5.0.0",
+    "proxy-agent": "^8.0.3",
     "rate-limit-redis": "^3.0.1",
     "semver": "^6.3.0",
     "superagent": "^5.1.0",
     "superagent-logger": "^1.1.0",
     "superagent-prefix": "0.0.2",
-    "uuid": "^3.3.3",
-    "uuid62": "1.0.1",
+    "uuid": "^11.1.1",
     "vhost": "3.0.2",
     "winston": "3.8.1",
     "yargs": "^16.2.0",
     "yawn-yaml": "1.4.0",
-    "yeoman-environment": "^3.9.1",
-    "yeoman-generator": "^5.6.1"
+    "yeoman-environment": "^6.3.0",
+    "yeoman-generator": "^10.3.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.1",
     "@types/json-schema": "7.0.3",
-    "codecov": "^3.5.0",
     "cpr": "^3.0.1",
     "cross-env": "^5.2.1",
     "eslint": "^6.3.0",
@@ -124,17 +147,35 @@
     "husky": "^3.0.5",
     "istanbul": "0.4.5",
     "lint-staged": "^9.2.5",
-    "mocha": "^6.2.0",
+    "mocha": "^12.0.3",
     "mocha-lcov-reporter": "1.3.0",
-    "nyc": "^14.1.1",
-    "puppeteer": "^1.19.0",
+    "nyc": "^18.0.0",
+    "puppeteer": "^25.18.1",
     "rimraf": "^3.0.0",
     "should": "^13.2.3",
     "sinon": "^7.4.2",
     "supertest": "^4.0.2",
     "supertest-session": "^4.0.0",
-    "tmp": "^0.1.0",
-    "yeoman-test": "^6.3.0"
+    "tmp": "^0.2.7",
+    "yeoman-test": "^11.8.2"
+  },
+  "bundleDependencies": [
+    "ioredis-mock"
+  ],
+  "overrides": {
+    "glob@>=9 <14.0.2": "^14.0.6",
+    "minimatch@>=7 <11": "^11.0.9",
+    "flatted": "^3.4.2",
+    "external-editor": {
+      "tmp": "^0.2.7"
+    },
+    "@tootallnate/once": "^2.0.1",
+    "sinon": {
+      "diff": "^3.5.1"
+    },
+    "teeny-request": {
+      "uuid": "$uuid"
+    }
   },
   "yargs": {
     "boolean-negation": false
@@ -143,5 +184,13 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/expressgateway/express-gateway/issues"
   }
 }
