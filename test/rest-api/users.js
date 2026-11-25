@@ -29,6 +29,10 @@ describe('REST: Users', () => {
       const nextPage = await adminHelper.admin.users.list({ count, start: firstPage.nextKey });
       should(nextPage.users).not.be.empty();
       should(nextPage.nextKey).not.eql(firstPage.nextKey);
+
+      const firstPageIds = new Set(firstPage.users.map(user => user.id));
+      const overlappingUsers = nextPage.users.filter(user => firstPageIds.has(user.id));
+      should(overlappingUsers).be.empty();
     });
 
     it('should respect a count parameter', () =>

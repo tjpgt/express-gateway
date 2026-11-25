@@ -62,6 +62,10 @@ describe('REST: Applications', () => {
       const nextPage = await adminHelper.admin.apps.list({ count, start: firstPage.nextKey });
       should(nextPage.apps).not.be.empty();
       should(nextPage.nextKey).not.eql(firstPage.nextKey);
+
+      const firstPageIds = new Set(firstPage.apps.map(app => app.id));
+      const overlappingApps = nextPage.apps.filter(app => firstPageIds.has(app.id));
+      should(overlappingApps).be.empty();
     });
 
     it('should respect a count parameter', () =>
