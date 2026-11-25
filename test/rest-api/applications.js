@@ -54,9 +54,15 @@ describe('REST: Applications', () => {
       adminHelper.admin.apps.list().then((data) => should(data).have.property('nextKey').Number().not.eql(0))
     );
 
-    it('should respect the start parameter', () =>
-      adminHelper.admin.apps.list({ start: 20 }).then((data) => should(data.apps[0].name).not.eql('appy1'))
-    );
+    it('should respect the start parameter', async () => {
+      const count = 40;
+      const firstPage = await adminHelper.admin.apps.list({ count });
+      should(firstPage.nextKey).be.above(0);
+
+      const nextPage = await adminHelper.admin.apps.list({ count, start: firstPage.nextKey });
+      should(nextPage.apps).not.be.empty();
+      should(nextPage.nextKey).not.eql(firstPage.nextKey);
+    });
 
     it('should respect a count parameter', () =>
       adminHelper.admin.apps.list({ count: 3 }).then((data) => should(data.apps.length).lessThanOrEqual(3))

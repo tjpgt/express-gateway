@@ -1,17 +1,28 @@
 const assert = require('assert');
-const path = require('path');
+const { promisify } = require('util');
 const gateway = require('../lib');
+const config = require('../lib/config');
 
 describe('main module', () => {
-  it('fires up a new gateway instance with valid config', () => {
-    gateway()
-      .load(path.join(__dirname, 'config'))
-      .run();
+  it('fires up a new gateway instance with valid config', async () => {
+    const originalGatewayConfig = config.gatewayConfig;
+    config.gatewayConfig = {
+      ...originalGatewayConfig,
+      http: { port: 0 },
+      admin: { host: '127.0.0.1', port: 0 }
+    };
 
-    // this require needs to happen after the gateway is running.
-    const config = require('../lib/config');
-
-    assert(!!config.gatewayConfig);
-    assert(!!config.systemConfig);
+    try {
+      const [{ app }, adminServer] = await gateway().run();
+      try {
+        assert(app.listening);
+        assert(adminServer.listening);
+        assert(config.systemConfig);
+      } finally {
+        await Promise.all([app, adminServer].map(server => promisify(server.close).call(server)));
+      }
+    } finally {
+      config.gatewayConfig = originalGatewayConfig;
+    }
   });
 });

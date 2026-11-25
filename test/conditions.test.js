@@ -1,6 +1,7 @@
 const EgContextBase = require('../lib/gateway/context');
 const { init, conditions } = require('../lib/conditions');
 const express = require('express');
+const http = require('http');
 const should = require('should');
 
 describe('conditions', () => {
@@ -180,16 +181,31 @@ describe('conditions', () => {
     });
 
     describe('with a remote schema', function () {
-      let conditionPromise;
+      let server, matchesSchema;
 
-      before(() => {
-        conditionPromise = conditions['json-schema']({
+      before(async () => {
+        server = http.createServer((req, res) => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            type: 'object',
+            required: ['openapi', 'info', 'paths'],
+            properties: {
+              openapi: { type: 'string' },
+              info: { type: 'object', required: ['version', 'title'] },
+              paths: { type: 'object' }
+            }
+          }));
+        });
+        await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+        matchesSchema = await conditions['json-schema']({
           schema: {
             $id: 'oas',
-            $ref: 'https://raw.githack.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json'
+            $ref: `http://127.0.0.1:${server.address().port}/schema.json`
           }
         });
       });
+
+      after(done => server.close(done));
 
       it('should match if the body matches the schema', () => {
         req.body = {
@@ -201,9 +217,7 @@ describe('conditions', () => {
           paths: {}
         };
 
-        return should(conditionPromise).be.resolved().then(fn => {
-          should(fn(req)).be.true();
-        });
+        should(matchesSchema(req)).be.true();
       });
 
       it('should not match if the body does not matches the schema', () => {
@@ -212,9 +226,7 @@ describe('conditions', () => {
           paths: {}
         };
 
-        return should(conditionPromise).be.resolved().then(fn => {
-          should(fn(req)).be.false();
-        });
+        should(matchesSchema(req)).be.false();
       });
     });
   });

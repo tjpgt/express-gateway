@@ -9,8 +9,6 @@ const gwHelper = require('../common/gateway.helper');
 
 let tempPath;
 
-const { findOpenPortNumbers } = require('../common/server-helper');
-
 describe('oauth2 authorization code grant type', () => {
   const username = 'kate';
   const state = 'ABC123xyz';
@@ -73,9 +71,11 @@ describe('oauth2 authorization code grant type', () => {
       }
     };
 
-    return findOpenPortNumbers(1)
-      .then(([port]) => { redirectPort = port; return generateRedirectServer(redirectPort); })
-      .then((server) => { redirectServer = server; })
+    return generateRedirectServer(0)
+      .then(server => {
+        redirectServer = server;
+        redirectPort = server.address().port;
+      })
       .then(cliHelper.bootstrapFolder)
       .then(dirInfo => gwHelper.startGatewayInstance({ dirInfo, gatewayConfig }))
       .then(gwInfo => {
@@ -146,19 +146,9 @@ describe('oauth2 authorization code grant type', () => {
       }
     });
 
-    const checkUnauthorized = new Promise((resolve, reject) => {
-      request
-        .get(`http://localhost:${gatewayPort}`)
-        .end((err, res) => {
-          if (!err) reject(new Error('Error should be defined'));
-          should(err).not.be.undefined();
-          should(res.unauthorized).not.be.undefined();
-          should(res.statusCode).be.eql(401);
-          resolve();
-        });
-    });
-
-    return checkUnauthorized
+    return request
+      .get(`http://localhost:${gatewayPort}`)
+      .ok(res => res.status === 401)
       .then(async () => {
         const browser = await puppeteer.launch();
         try {
